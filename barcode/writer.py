@@ -180,7 +180,7 @@ class BaseWriter(object):
             c = 1
             mlist = []
             for i in range(0, len(line) - 1):
-                if line[i] == line[i+1]:
+                if line[i] == line[i + 1]:
                     c += 1
                 else:
                     if line[i] == "1":
@@ -311,7 +311,7 @@ else:
             self._draw = None
 
         def _init(self, code):
-            size = self.calculate_size(len(code[0]), len(code), self.dpi)
+            size = self.calculate_size(len(code[0]), len(code) + 0.5, self.dpi)
             self._image = Image.new('RGB', size, self.background)
             self._draw = ImageDraw.Draw(self._image)
 
@@ -323,10 +323,18 @@ else:
 
         def _paint_text(self, xpos, ypos):
             font = ImageFont.truetype(FONT, self.font_size * 2)
-            width, height = font.getsize(self.text)
+            width = 0
+            height = 0
+            for line in self.text.split('\n'):
+                a_width, a_height = font.getsize(line)
+                if a_width > width:
+                    width = a_width
+                    height = a_height
             pos = (mm2px(xpos, self.dpi) - width // 2,
-                   mm2px(ypos, self.dpi) - height // 4)
-            self._draw.text(pos, self.text, font=font, fill=self.foreground)
+                mm2px(ypos, self.dpi) - height // 4)
+            self._draw.multiline_text(
+                pos, self.text, font=font, fill=self.foreground, spacing=4,
+                align='center', anchor=10)
 
         def _finish(self):
             return self._image
